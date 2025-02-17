@@ -54,12 +54,14 @@ const Playground = () => {
 								rows: result.data.map((row: any) => Object.values(row)),
 							},
 						});
-					} else if (result.type === "message") {
+					}
+					// not rendering message type outputs
+					/*else if (result.type === "message") {
 						outputs.push({
 							type: "message",
 							data: result.message,
 						});
-					}
+					}*/
 				});
 
 				setQueryOutputs(outputs);

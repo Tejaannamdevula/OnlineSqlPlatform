@@ -13,9 +13,12 @@ const QueryResult = ({
 	return (
 		<Card className="shadow-sm">
 			<CardHeader className="py-3">
-				<CardTitle className="text-base font-medium">
+				{
+					// not renderning query number
+					/* <CardTitle className="text-base font-medium">
 					Query {index + 1}
-				</CardTitle>
+				</CardTitle> */
+				}
 			</CardHeader>
 			<CardContent>
 				{output.type === "table" ? (
