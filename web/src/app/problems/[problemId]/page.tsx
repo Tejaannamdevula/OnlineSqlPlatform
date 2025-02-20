@@ -5,9 +5,8 @@ import { problems } from "@/db/postgres/schema";
 import { sql } from "drizzle-orm";
 import { ProblemPageClient } from "./ProblemPageClient";
 
-// Utility function to fetch the problem by ID
 async function fetchProblemById(problemId: string) {
-	if (!problemId) return null; // Prevent querying with an undefined ID
+	if (!problemId) return null; // id need to exist
 	console.log("Fetching problem by ID:", problemId);
 	const result = await appDb
 		.select({
@@ -15,7 +14,7 @@ async function fetchProblemById(problemId: string) {
 			title: problems.title,
 			description: problems.description,
 			boilerplate: problems.boilerplate,
-			expectedOutput: problems.output, // Ensure `output` exists in schema
+			expectedOutput: problems.output,
 		})
 		.from(problems)
 		.where(sql`${problems.id} = ${problemId}`);

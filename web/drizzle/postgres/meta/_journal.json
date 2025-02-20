@@ -8,6 +8,13 @@
       "when": 1739519590266,
       "tag": "0000_sticky_sue_storm",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1740030187320,
+      "tag": "0001_real_strong_guy",
+      "breakpoints": true
     }
   ]
 }
