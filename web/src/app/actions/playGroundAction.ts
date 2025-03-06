@@ -19,6 +19,7 @@ export async function executeUserQuery(
 	console.log("Executing query:", query);
 	try {
 		const parser = new Parser();
+		console.log("Query is ", query);
 
 		// Parse the SQL to get AST (Abstract Syntax Tree)
 		const ast = parser.astify(query);
@@ -66,47 +67,6 @@ export async function executeUserQuery(
 				});
 			}
 		}
-
-		// const queries = query
-		// 	.split(";")
-		// 	.map((q) => q.trim())
-		// 	.filter((q) => q.length > 0);
-
-		// const results = [];
-
-		// for (const q of queries) {
-		// 	const [rows, fields] = await db.execute(q);
-
-		// 	if (q.toLowerCase().trim().startsWith("select")) {
-		// 		if (Array.isArray(rows) && rows.length > 0) {
-		// 			results.push({
-		// 				type: "result",
-		// 				data: rows.map((row) => {
-		// 					const plainRow: Record<string, string | number> = {};
-		// 					for (const [key, value] of Object.entries(row)) {
-		// 						if (typeof value === "string" || typeof value === "number") {
-		// 							plainRow[key] = value;
-		// 						}
-		// 					}
-		// 					return plainRow;
-		// 				}),
-		// 			});
-		// 		} else {
-		// 			results.push({
-		// 				type: "message",
-		// 				message: "Query executed successfully - No data returned",
-		// 			});
-		// 		}
-		// 	} else {
-		// 		// For non-SELECT queries
-		// 		results.push({
-		// 			type: "message",
-		// 			message: `Query executed successfully - ${
-		// 				rows.affectedRows || 0
-		// 			} row(s) affected`,
-		// 		});
-		// 	}
-		// }
 
 		return {
 			success: true,
