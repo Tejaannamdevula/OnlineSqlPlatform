@@ -70,7 +70,7 @@ export async function verifySession() {
 
 		return {
 			isAuth: true,
-			userId: Number(session.userId),
+			userId: session.userId,
 			role: session.role,
 			email: session.email,
 		};
