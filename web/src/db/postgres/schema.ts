@@ -127,6 +127,24 @@ export const submission_test_results = pgTable("submission_test_results", {
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// export const contests = pgTable("contests", {
+// 	id: uuid("id").defaultRandom().primaryKey(),
+// 	title: varchar("title", { length: 255 }).notNull(),
+// 	description: text("description").notNull(),
+// 	startTime: timestamp("start_time").notNull(),
+// 	endTime: timestamp("end_time").notNull(),
+// 	status: contestStatus("status").default("Upcoming"),
+// 	visibility: contestVisibility("visibility").default("public"),
+// 	leaderBoard: boolean("leader_board").default(false),
+// 	createdBy: uuid("created_by")
+// 		.notNull()
+// 		.references(() => users.id),
+// 	createdAt: timestamp("created_at").defaultNow().notNull(),
+// 	updatedAt: timestamp("updated_at")
+// 		.default(sql`now()`)
+// 		.notNull(),
+// });
+
 export const contests = pgTable("contests", {
 	id: uuid("id").defaultRandom().primaryKey(),
 	title: varchar("title", { length: 255 }).notNull(),
@@ -143,8 +161,12 @@ export const contests = pgTable("contests", {
 	updatedAt: timestamp("updated_at")
 		.default(sql`now()`)
 		.notNull(),
+	// Add these new fields
+	registrationRequired: boolean("registration_required").default(false),
+	password: varchar("password", { length: 255 }),
+	rules: text("rules"),
+	timeLimit: integer("time_limit"),
 });
-
 export const contestProblems = pgTable(
 	"contest_problems",
 	{

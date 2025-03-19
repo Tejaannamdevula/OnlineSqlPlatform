@@ -8,6 +8,13 @@
       "when": 1741245632433,
       "tag": "0000_parallel_prowler",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1742368065553,
+      "tag": "0001_salty_darkhawk",
+      "breakpoints": true
     }
   ]
 }
