@@ -4,7 +4,8 @@ import { sql } from "drizzle-orm";
 // import ProblemPageClient from "./ProblemPageClient";
 import { verifySession } from "@/app/actions/session";
 import { ProblemPageClient } from "./ProblemPageClient";
-async function fetchProblemById(problemId: string) {
+
+export async function fetchProblemById(problemId: string) {
 	if (!problemId) return null; // id need to exist
 	console.log("Fetching problem by ID:", problemId);
 

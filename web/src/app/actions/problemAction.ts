@@ -8,7 +8,6 @@ import {
 	userProblems,
 } from "@/db/postgres/schema";
 import { sql } from "drizzle-orm";
-import { v4 as uuidv4 } from "uuid";
 import { verifySession } from "./session";
 
 // Function to execute a single test case
@@ -145,14 +144,21 @@ export async function submitSolution({
 			};
 		}
 
-		const submissionId = uuidv4();
-		await appDb.insert(submissions).values({
-			id: submissionId,
-			userId: userId.toString(),
-			problemId,
-			code,
-			status: "Pending",
-		});
+		if (!userId) {
+			throw new Error("User ID is undefined");
+		}
+
+		const [submissionResult] = await appDb
+			.insert(submissions)
+			.values({
+				userId: userId,
+				problemId,
+				code,
+				status: "Pending",
+			})
+			.returning({ id: submissions.id });
+
+		const submissionId = submissionResult.id;
 
 		let passedTests = 0;
 		const totalTests = testCases.length + (customTestCase ? 1 : 0);

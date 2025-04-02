@@ -13,19 +13,30 @@ export default async function middleware(req: NextRequest) {
 	const isUserRoute = path.startsWith("/user");
 	const isProtectedRoute = isAdminRoute || isUserRoute;
 
+	// Define common routes that both admin and regular users can access
+	const commonRoutePrefixes = ["/contest"];
+	const isCommonRoute = commonRoutePrefixes.some((prefix) =>
+		path.startsWith(prefix)
+	);
+
 	// If the user isn't authenticated, redirect to the login page
 	if (isProtectedRoute && !session?.userId) {
 		return NextResponse.redirect(new URL("/api/login", req.nextUrl));
 	}
 
 	// Enforce role-specific routes:
-	// If an authenticated admin is not accessing an admin route, redirect them.
-	if (session?.userId && session?.role === "admin" && !isAdminRoute) {
+	// If an authenticated admin is accessing a non-admin and non-common route, redirect them to admin.
+	if (
+		session?.userId &&
+		session?.role === "admin" &&
+		!isAdminRoute &&
+		!isCommonRoute
+	) {
 		return NextResponse.redirect(new URL("/admin", req.nextUrl));
 	}
 
-	// // If an authenticated user (non-admin) is not accessing a user route, redirect them.
-	// if (session?.userId && session?.role === "user" && !isUserRoute) {
+	// Uncommenting below if you want to enforce user role restrictions similarly
+	// if (session?.userId && session?.role === "user" && !isUserRoute && !isCommonRoute) {
 	// 	return NextResponse.redirect(new URL("/user", req.nextUrl));
 	// }
 

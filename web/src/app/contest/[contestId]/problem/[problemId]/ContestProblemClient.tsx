@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
@@ -7,21 +7,24 @@ import CodeMirrorEditor, {
 	type CodeMirrorHandle,
 } from "@/components/CodeMirrorEditor";
 import { ProblemStatement } from "@/components/ProblemStatement";
-import { Play, ChevronLeft, ChevronRight, Send, LogIn } from "lucide-react";
 import {
-	executeUserQuery,
-	submitSolution,
-} from "@/app/actions/playGroundAction";
+	Play,
+	ChevronLeft,
+	ChevronRight,
+	Send,
+	LogIn,
+	ArrowLeft,
+	Clock,
+} from "lucide-react";
+import { runCode } from "@/app/actions/playGroundAction";
+import { submitContestSolution } from "@/app/actions/contest-actions";
 import { TestCasePanel } from "@/components/TestCasePanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 import { ResizablePanel } from "@/components/ResizablePanel";
-import {
-	deleteAllTables,
-	clearAllTableData,
-	runCode,
-} from "@/app/actions/playGroundAction";
+import Link from "next/link";
+
 interface TestCase {
 	id: string;
 	inputData: string;
@@ -49,11 +52,21 @@ type QueryExecutionResult = {
 	error?: string;
 };
 
-export function ProblemPageClient({
+interface ContestInfo {
+	id: string;
+	name: string;
+	endTime: string;
+}
+
+export function ContestProblemClient({
 	problemData,
+	contestId,
+	contestInfo,
 	isAuthenticated = false,
 }: {
 	problemData: Problem;
+	contestId: string;
+	contestInfo: ContestInfo;
 	isAuthenticated?: boolean;
 }) {
 	const router = useRouter();
@@ -72,8 +85,35 @@ export function ProblemPageClient({
 		message: string;
 		passedTests: number;
 		totalTests: number;
+		earnedPoints?: number;
 	} | null>(null);
+	const [timeRemaining, setTimeRemaining] = useState("");
 	const { toast } = useToast();
+
+	// Calculate and update time remaining
+	useEffect(() => {
+		const calculateTimeRemaining = () => {
+			const now = new Date();
+			const endTime = new Date(contestInfo.endTime);
+			const diff = endTime.getTime() - now.getTime();
+
+			if (diff <= 0) {
+				setTimeRemaining("Contest has ended");
+				return;
+			}
+
+			const hours = Math.floor(diff / (1000 * 60 * 60));
+			const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+			const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+			setTimeRemaining(`${hours}h ${minutes}m ${seconds}s`);
+		};
+
+		calculateTimeRemaining();
+		const timer = setInterval(calculateTimeRemaining, 1000);
+
+		return () => clearInterval(timer);
+	}, [contestInfo.endTime]);
 
 	if (!problemData) {
 		return (
@@ -187,7 +227,13 @@ export function ProblemPageClient({
 			toast({
 				variant: "destructive",
 				title: "Execution Error",
-				description: { errorMessage },
+				description: (
+					<div className="bg-red-50 border border-red-200 rounded-lg p-3">
+						<div className="text-red-700 font-mono whitespace-pre-wrap">
+							{errorMessage}
+						</div>
+					</div>
+				),
 				duration: 5000,
 			});
 		} finally {
@@ -220,10 +266,11 @@ export function ProblemPageClient({
 		try {
 			const userCode = codeEditorRef.current.getValue();
 
-			// Submit solution to run against all test cases (including hidden ones)
-			const result = await submitSolution({
+			// Submit solution to the contest
+			const result = await submitContestSolution({
 				code: userCode,
 				problemId: problemData.id,
+				contestId: contestId,
 			});
 
 			setSubmissionResult(result);
@@ -232,7 +279,7 @@ export function ProblemPageClient({
 			if (result.success) {
 				toast({
 					title: "Success! 🎉",
-					description: `Your solution passed ${result.passedTests}/${result.totalTests} test cases.`,
+					description: `Your solution passed ${result.passedTests}/${result.totalTests} test cases. You earned ${result.earnedPoints} points!`,
 					variant: "default",
 					className: "bg-green-500 text-white",
 				});
@@ -281,6 +328,20 @@ export function ProblemPageClient({
 				>
 					<div className="h-full overflow-auto">
 						<div className="max-w-2xl mx-auto p-8">
+							{/* Back Button and Contest Info */}
+							<div className="flex items-center justify-between mb-6">
+								<Link href={`/contest/${contestId}`}>
+									<Button variant="outline" className="flex items-center gap-2">
+										<ArrowLeft size={16} />
+										Back to Contest
+									</Button>
+								</Link>
+								<div className="flex items-center gap-2 text-gray-600">
+									<Clock size={16} />
+									<span className="font-medium">{timeRemaining}</span>
+								</div>
+							</div>
+
 							<div className="flex items-center gap-2 mb-4">
 								<h1 className="text-3xl font-bold text-gray-900">
 									{problemData.title}
@@ -296,6 +357,12 @@ export function ProblemPageClient({
 								>
 									{problemData.difficulty}
 								</Badge>
+							</div>
+
+							{/* Contest Name */}
+							<div className="mb-6">
+								<span className="text-gray-600">Contest: </span>
+								<span className="font-medium">{contestInfo.name}</span>
 							</div>
 
 							{/* Tabs for Description and Submission */}
@@ -340,6 +407,11 @@ export function ProblemPageClient({
 												Passed {submissionResult.passedTests} of{" "}
 												{submissionResult.totalTests} test cases
 											</div>
+											{submissionResult.earnedPoints !== undefined && (
+												<div className="mt-2 font-medium">
+													Points earned: {submissionResult.earnedPoints}
+												</div>
+											)}
 										</div>
 									) : (
 										<div className="text-center py-8 text-gray-500">
