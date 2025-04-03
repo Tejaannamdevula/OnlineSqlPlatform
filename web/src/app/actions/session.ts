@@ -37,13 +37,13 @@ export async function decrypt(session: string | undefined = "") {
 export async function createSession(data: SessionPayload) {
 	try {
 		const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-		const { userId, email, role } = data;
+		const { userId, email, role, name } = data;
 
 		if (!userId || !email || !role) {
 			throw new Error("Missing required session data");
 		}
 
-		const session = await encrypt({ userId, email, role, expiresAt });
+		const session = await encrypt({ userId, email, role, expiresAt, name });
 		const cookieStore = await cookies();
 
 		cookieStore.set("session", session, {
@@ -73,6 +73,7 @@ export async function verifySession() {
 			userId: session.userId,
 			role: session.role,
 			email: session.email,
+			name: session.name,
 		};
 	} catch (error) {
 		console.error("Session verification failed:", error);

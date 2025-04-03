@@ -7,8 +7,7 @@ import {
 	TableBody,
 	TableCell,
 } from "@/components/ui/table";
-import { Trophy, Medal } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface ContestPointData {
 	rank: number;
@@ -31,59 +30,78 @@ export function ContestPointsTable({
 	contestPoints: ContestPointData[];
 	currentUser?: SessionUser;
 }) {
-	function getClassName(contestPoint: ContestPointData) {
-		return currentUser?.id === contestPoint.user.id
-			? "font-bold text-green-600 dark:text-green-500"
-			: "";
-	}
-
-	function getRankIcon(rank: number) {
-		switch (rank) {
-			case 1:
-				return <Trophy className="h-5 w-5 text-yellow-500" />;
-			case 2:
-				return <Medal className="h-5 w-5 text-gray-400" />;
-			case 3:
-				return <Medal className="h-5 w-5 text-amber-700" />;
-			default:
-				return null;
-		}
+	function getInitials(name: string) {
+		return name
+			.split(" ")
+			.map((part) => part[0])
+			.join("")
+			.toUpperCase()
+			.substring(0, 2);
 	}
 
 	return (
-		<Table>
-			<TableHeader>
-				<TableRow>
-					<TableHead className="w-16">Rank</TableHead>
-					<TableHead>User</TableHead>
-					<TableHead className="text-right">Points</TableHead>
-				</TableRow>
-			</TableHeader>
-			<TableBody>
-				{contestPoints.map((contestPoint) => (
-					<TableRow key={contestPoint.user.id}>
-						<TableCell className={getClassName(contestPoint)}>
-							<div className="flex items-center gap-2">
-								{getRankIcon(contestPoint.rank)}
-								<span>{contestPoint.rank}</span>
-							</div>
-						</TableCell>
-						<TableCell className={getClassName(contestPoint)}>
-							{contestPoint.user.name}
-						</TableCell>
-						<TableCell className={`text-right ${getClassName(contestPoint)}`}>
-							{contestPoint.points}
-						</TableCell>
+		<div className="overflow-hidden rounded-md border border-border">
+			<Table>
+				<TableHeader>
+					<TableRow className="bg-muted/50 hover:bg-muted/50">
+						<TableHead className="w-16 text-xs font-medium text-muted-foreground">
+							Rank
+						</TableHead>
+						<TableHead className="text-xs font-medium text-muted-foreground">
+							User
+						</TableHead>
+						<TableHead className="text-right text-xs font-medium text-muted-foreground">
+							Points
+						</TableHead>
 					</TableRow>
-				))}
-				{contestPoints.length === 0 && (
-					<TableRow>
-						<TableCell colSpan={3} className="text-center py-6 text-gray-500">
-							No participants yet
-						</TableCell>
-					</TableRow>
-				)}
-			</TableBody>
-		</Table>
+				</TableHeader>
+				<TableBody>
+					{contestPoints.map((contestPoint) => {
+						const isCurrentUser = currentUser?.id === contestPoint.user.id;
+
+						return (
+							<TableRow
+								key={contestPoint.user.id}
+								className={isCurrentUser ? "bg-primary/5" : ""}
+							>
+								<TableCell className="py-3 text-sm">
+									{contestPoint.rank}
+								</TableCell>
+								<TableCell className="py-3">
+									<div className="flex items-center gap-3">
+										<Avatar className="h-6 w-6">
+											<AvatarFallback className="text-xs bg-muted">
+												{getInitials(contestPoint.user.name)}
+											</AvatarFallback>
+										</Avatar>
+										<span className={isCurrentUser ? "font-medium" : ""}>
+											{contestPoint.user.name}
+										</span>
+										{isCurrentUser && (
+											<span className="text-xs text-muted-foreground ml-2">
+												(you)
+											</span>
+										)}
+									</div>
+								</TableCell>
+								<TableCell className="py-3 text-right font-medium text-sm">
+									{contestPoint.points}
+								</TableCell>
+							</TableRow>
+						);
+					})}
+					{contestPoints.length === 0 && (
+						<TableRow>
+							<TableCell
+								colSpan={3}
+								className="py-8 text-center text-muted-foreground"
+							>
+								No participants yet
+							</TableCell>
+						</TableRow>
+					)}
+				</TableBody>
+			</Table>
+		</div>
 	);
 }
