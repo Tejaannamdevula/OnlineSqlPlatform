@@ -254,7 +254,7 @@ export default function CreateContestForm() {
 				});
 
 				// Redirect to contests page
-				router.push("/contests");
+				router.push("/admin/contests");
 			} else {
 				// Now TypeScript knows that in this branch, result has the error property
 				toast.error("Failed to create contest", {

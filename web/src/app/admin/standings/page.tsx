@@ -8,8 +8,21 @@ import {
 	TableBody,
 	TableCell,
 } from "@/components/ui/table";
-import { CalendarIcon, TrophyIcon } from "lucide-react";
+import {
+	CalendarIcon,
+	TrophyIcon,
+	ClockIcon,
+	ListOrderedIcon,
+	ArrowRightIcon,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
 
 interface IContest {
 	id: string;
@@ -24,9 +37,9 @@ export default async function StandingsPage() {
 
 	if (!contestsResult.success) {
 		return (
-			<div className="flex flex-col min-h-screen p-4 max-w-screen-lg mx-auto">
-				<div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-					<h2 className="text-xl font-semibold text-red-700 mb-2">
+			<div className="flex flex-col min-h-screen p-6 max-w-screen-lg mx-auto">
+				<div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center my-8">
+					<h2 className="text-2xl font-semibold text-red-700 mb-3">
 						Error Loading Contests
 					</h2>
 					<p className="text-red-600">
@@ -41,16 +54,17 @@ export default async function StandingsPage() {
 	const contests: IContest[] = contestsResult.data || [];
 
 	return (
-		<div className="flex flex-col min-h-screen p-4 max-w-screen-lg mx-auto">
-			<div className="container px-4 md:px-6">
-				<div className="mb-8">
-					<h1 className="text-3xl font-bold mb-2">Contest Standings</h1>
-					<p className="text-gray-500 dark:text-gray-400">
-						View the leaderboards for all contests
-					</p>
-				</div>
+		<div className="flex flex-col min-h-screen p-6 max-w-screen-lg mx-auto">
+			<div className="mb-8">
+				<h1 className="text-3xl sm:text-4xl font-bold mb-3">
+					Contest Standings
+				</h1>
+				<p className="text-muted-foreground">
+					View and track performance across all coding competitions
+				</p>
 			</div>
-			<div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+
+			<div>
 				<ContestsTable contests={contests} />
 			</div>
 		</div>
@@ -64,46 +78,67 @@ function ContestsTable({ contests }: { contests: IContest[] }) {
 	const finishedContests = contests.filter((c) => c.status === "finished");
 
 	return (
-		<div className="overflow-x-auto">
+		<div className="space-y-8">
 			{activeContests.length > 0 && (
-				<>
-					<div className="px-6 py-4 bg-green-50 dark:bg-green-900/20 border-b border-green-100 dark:border-green-800">
-						<h2 className="text-lg font-semibold text-green-700 dark:text-green-400 flex items-center">
+				<Card>
+					<CardHeader className="pb-3 border-b bg-green-50 dark:bg-green-900/20">
+						<CardTitle className="text-lg text-green-700 dark:text-green-400 flex items-center">
 							<TrophyIcon className="mr-2 h-5 w-5" />
 							Active Contests
-						</h2>
-					</div>
-					<ContestsList contests={activeContests} />
-				</>
+						</CardTitle>
+						<CardDescription className="text-green-600/70 dark:text-green-500/70">
+							Competitions currently in progress
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="p-0">
+						<ContestsList contests={activeContests} />
+					</CardContent>
+				</Card>
 			)}
 
 			{upcomingContests.length > 0 && (
-				<>
-					<div className="px-6 py-4 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-800">
-						<h2 className="text-lg font-semibold text-blue-700 dark:text-blue-400 flex items-center">
+				<Card>
+					<CardHeader className="pb-3 border-b bg-blue-50 dark:bg-blue-900/20">
+						<CardTitle className="text-lg text-blue-700 dark:text-blue-400 flex items-center">
 							<CalendarIcon className="mr-2 h-5 w-5" />
 							Upcoming Contests
-						</h2>
-					</div>
-					<ContestsList contests={upcomingContests} />
-				</>
+						</CardTitle>
+						<CardDescription className="text-blue-600/70 dark:text-blue-500/70">
+							Scheduled competitions starting soon
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="p-0">
+						<ContestsList contests={upcomingContests} />
+					</CardContent>
+				</Card>
 			)}
 
 			{finishedContests.length > 0 && (
-				<>
-					<div className="px-6 py-4 bg-gray-50 dark:bg-gray-700/30 border-b border-gray-100 dark:border-gray-700">
-						<h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 flex items-center">
-							<TrophyIcon className="mr-2 h-5 w-5" />
+				<Card>
+					<CardHeader className="pb-3 border-b bg-gray-50 dark:bg-gray-700/30">
+						<CardTitle className="text-lg text-gray-700 dark:text-gray-300 flex items-center">
+							<ListOrderedIcon className="mr-2 h-5 w-5" />
 							Finished Contests
-						</h2>
-					</div>
-					<ContestsList contests={finishedContests} />
-				</>
+						</CardTitle>
+						<CardDescription className="text-gray-600/70 dark:text-gray-400/70">
+							Past competitions with final results
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="p-0">
+						<ContestsList contests={finishedContests} />
+					</CardContent>
+				</Card>
 			)}
 
 			{contests.length === 0 && (
-				<div className="p-8 text-center text-gray-500">
-					No contests with leaderboards available
+				<div className="py-12 text-center rounded-lg border-2 border-dashed">
+					<TrophyIcon className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
+					<h3 className="text-lg font-medium text-muted-foreground mb-2">
+						No contests available
+					</h3>
+					<p className="text-sm text-muted-foreground/70">
+						There are no contests with leaderboards at the moment
+					</p>
 				</div>
 			)}
 		</div>
@@ -111,37 +146,73 @@ function ContestsTable({ contests }: { contests: IContest[] }) {
 }
 
 function ContestsList({ contests }: { contests: IContest[] }) {
+	// Format date strings for display
+	const dateTimeOptions: Intl.DateTimeFormatOptions = {
+		month: "short",
+		day: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+	};
+
+	const formatDateTime = (date: Date) =>
+		date.toLocaleString(undefined, dateTimeOptions);
+
 	return (
-		<Table>
-			<TableHeader>
-				<TableRow>
-					<TableHead>Contest Name</TableHead>
-					<TableHead>Start Time</TableHead>
-					<TableHead>End Time</TableHead>
-					<TableHead>Status</TableHead>
-					<TableHead className="text-right">Standings</TableHead>
-				</TableRow>
-			</TableHeader>
-			<TableBody>
-				{contests.map((contest) => (
-					<TableRow key={contest.id}>
-						<TableCell className="font-medium">{contest.title}</TableCell>
-						<TableCell>
-							{new Date(contest.startTime).toLocaleString()}
-						</TableCell>
-						<TableCell>{new Date(contest.endTime).toLocaleString()}</TableCell>
-						<TableCell>
-							<StatusBadge status={contest.status} />
-						</TableCell>
-						<TableCell className="text-right">
-							<PrimaryButton href={`/admin/standings/${contest.id}`}>
-								View Standings
-							</PrimaryButton>
-						</TableCell>
+		<div className="overflow-hidden">
+			<Table>
+				<TableHeader>
+					<TableRow className="bg-muted/50 hover:bg-muted/50">
+						<TableHead className="w-[40%]">Contest Name</TableHead>
+						<TableHead className="hidden md:table-cell">
+							<div className="flex items-center">
+								<ClockIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+								Timeline
+							</div>
+						</TableHead>
+						<TableHead className="hidden sm:table-cell w-[120px]">
+							Status
+						</TableHead>
+						<TableHead className="text-right" />
 					</TableRow>
-				))}
-			</TableBody>
-		</Table>
+				</TableHeader>
+				<TableBody>
+					{contests.map((contest) => (
+						<TableRow key={contest.id} className="group">
+							<TableCell className="font-medium">
+								<div>{contest.title}</div>
+								<div className="block sm:hidden text-xs text-muted-foreground mt-1">
+									<StatusBadge status={contest.status} />
+								</div>
+								<div className="md:hidden text-xs text-muted-foreground mt-1">
+									{formatDateTime(new Date(contest.startTime))} -{" "}
+									{formatDateTime(new Date(contest.endTime))}
+								</div>
+							</TableCell>
+							<TableCell className="hidden md:table-cell">
+								<div className="flex items-center">
+									<span>{formatDateTime(new Date(contest.startTime))}</span>
+									<ArrowRightIcon className="mx-2 h-3.5 w-3.5 text-muted-foreground" />
+									<span>{formatDateTime(new Date(contest.endTime))}</span>
+								</div>
+							</TableCell>
+							<TableCell className="hidden sm:table-cell">
+								<StatusBadge status={contest.status} />
+							</TableCell>
+							<TableCell className="text-right">
+								<PrimaryButton
+									href={`/admin/standings/${contest.id}`}
+									size="sm"
+									className="transition-all group-hover:bg-primary/90"
+								>
+									<span>View</span>
+									<ArrowRightIcon className="ml-2 h-4 w-4" />
+								</PrimaryButton>
+							</TableCell>
+						</TableRow>
+					))}
+				</TableBody>
+			</Table>
+		</div>
 	);
 }
 
@@ -151,10 +222,12 @@ function StatusBadge({
 	status: "upcoming" | "active" | "finished";
 }) {
 	if (status === "active") {
-		return <Badge className="bg-green-500">Active</Badge>;
-	} else if (status === "upcoming") {
-		return <Badge className="bg-blue-500">Upcoming</Badge>;
-	} else {
-		return <Badge variant="outline">Finished</Badge>;
+		return <Badge className="bg-green-500 hover:bg-green-600">Active</Badge>;
 	}
+
+	if (status === "upcoming") {
+		return <Badge className="bg-blue-500 hover:bg-blue-600">Upcoming</Badge>;
+	}
+
+	return <Badge variant="outline">Finished</Badge>;
 }
