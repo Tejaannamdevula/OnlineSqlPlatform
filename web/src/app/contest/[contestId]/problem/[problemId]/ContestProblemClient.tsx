@@ -7,15 +7,7 @@ import CodeMirrorEditor, {
 	type CodeMirrorHandle,
 } from "@/components/CodeMirrorEditor";
 import { ProblemStatement } from "@/components/ProblemStatement";
-import {
-	Play,
-	ChevronLeft,
-	ChevronRight,
-	Send,
-	LogIn,
-	ArrowLeft,
-	Clock,
-} from "lucide-react";
+import { Play, ChevronLeft, ChevronRight, Send, LogIn } from "lucide-react";
 import { runCode } from "@/app/actions/playGroundAction";
 import { submitContestSolution } from "@/app/actions/contest-actions";
 import { TestCasePanel } from "@/components/TestCasePanel";
@@ -23,7 +15,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 import { ResizablePanel } from "@/components/ResizablePanel";
-import Link from "next/link";
 
 interface TestCase {
 	id: string;
@@ -52,22 +43,16 @@ type QueryExecutionResult = {
 	error?: string;
 };
 
-interface ContestInfo {
-	id: string;
-	name: string;
-	endTime: string;
-}
-
 export function ContestProblemClient({
 	problemData,
 	contestId,
-	contestInfo,
 	isAuthenticated = false,
+	contestEndTime,
 }: {
 	problemData: Problem;
 	contestId: string;
-	contestInfo: ContestInfo;
 	isAuthenticated?: boolean;
+	contestEndTime?: Date;
 }) {
 	const router = useRouter();
 	const codeEditorRef = useRef<CodeMirrorHandle | null>(null);
@@ -87,33 +72,47 @@ export function ContestProblemClient({
 		totalTests: number;
 		earnedPoints?: number;
 	} | null>(null);
-	const [timeRemaining, setTimeRemaining] = useState("");
+	const [timeLeft, setTimeLeft] = useState<string>("");
 	const { toast } = useToast();
 
-	// Calculate and update time remaining
+	// Format time as HH:MM:SS
+	function formatTime(seconds: number): string {
+		const hours = Math.floor(seconds / 3600);
+		const minutes = Math.floor((seconds % 3600) / 60);
+		const secs = Math.floor(seconds % 60);
+
+		return [
+			hours.toString().padStart(2, "0"),
+			minutes.toString().padStart(2, "0"),
+			secs.toString().padStart(2, "0"),
+		].join(":");
+	}
+
+	// Update time left
 	useEffect(() => {
-		const calculateTimeRemaining = () => {
+		if (!contestEndTime) return;
+
+		const updateTimeLeft = () => {
 			const now = new Date();
-			const endTime = new Date(contestInfo.endTime);
-			const diff = endTime.getTime() - now.getTime();
+			const end = new Date(contestEndTime);
+			const diff = Math.max(0, end.getTime() - now.getTime());
 
 			if (diff <= 0) {
-				setTimeRemaining("Contest has ended");
+				setTimeLeft("Contest Ended");
 				return;
 			}
 
-			const hours = Math.floor(diff / (1000 * 60 * 60));
-			const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-			const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-			setTimeRemaining(`${hours}h ${minutes}m ${seconds}s`);
+			setTimeLeft(formatTime(Math.floor(diff / 1000)));
 		};
 
-		calculateTimeRemaining();
-		const timer = setInterval(calculateTimeRemaining, 1000);
+		// Update immediately
+		updateTimeLeft();
+
+		// Then update every second
+		const timer = setInterval(updateTimeLeft, 1000);
 
 		return () => clearInterval(timer);
-	}, [contestInfo.endTime]);
+	}, [contestEndTime]);
 
 	if (!problemData) {
 		return (
@@ -227,13 +226,7 @@ export function ContestProblemClient({
 			toast({
 				variant: "destructive",
 				title: "Execution Error",
-				description: (
-					<div className="bg-red-50 border border-red-200 rounded-lg p-3">
-						<div className="text-red-700 font-mono whitespace-pre-wrap">
-							{errorMessage}
-						</div>
-					</div>
-				),
+				description: errorMessage,
 				duration: 5000,
 			});
 		} finally {
@@ -328,20 +321,6 @@ export function ContestProblemClient({
 				>
 					<div className="h-full overflow-auto">
 						<div className="max-w-2xl mx-auto p-8">
-							{/* Back Button and Contest Info */}
-							<div className="flex items-center justify-between mb-6">
-								<Link href={`/contest/${contestId}`}>
-									<Button variant="outline" className="flex items-center gap-2">
-										<ArrowLeft size={16} />
-										Back to Contest
-									</Button>
-								</Link>
-								<div className="flex items-center gap-2 text-gray-600">
-									<Clock size={16} />
-									<span className="font-medium">{timeRemaining}</span>
-								</div>
-							</div>
-
 							<div className="flex items-center gap-2 mb-4">
 								<h1 className="text-3xl font-bold text-gray-900">
 									{problemData.title}
@@ -359,11 +338,15 @@ export function ContestProblemClient({
 								</Badge>
 							</div>
 
-							{/* Contest Name */}
-							<div className="mb-6">
-								<span className="text-gray-600">Contest: </span>
-								<span className="font-medium">{contestInfo.name}</span>
-							</div>
+							{/* Contest Timer */}
+							{contestEndTime && (
+								<div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded-md">
+									<div className="text-sm text-blue-700 font-medium">
+										Time Remaining:
+									</div>
+									<div className="font-mono text-lg font-bold">{timeLeft}</div>
+								</div>
+							)}
 
 							{/* Tabs for Description and Submission */}
 							<Tabs

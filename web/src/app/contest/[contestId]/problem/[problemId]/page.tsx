@@ -1,6 +1,9 @@
 import { fetchProblemById } from "@/app/problems/[problemId]/page";
 import { verifySession } from "@/app/actions/session";
-import { getContestWithProblems } from "@/app/actions/contest-actions";
+import {
+	getContestWithProblems,
+	checkContestAccess,
+} from "@/app/actions/contest-actions";
 import { ContestProblemClient } from "./ContestProblemClient";
 import { redirect } from "next/navigation";
 
@@ -17,6 +20,18 @@ export default async function ContestProblemPage({
 		redirect(
 			"/api/login?callbackUrl=" +
 				encodeURIComponent(`/contest/${contestId}/problem/${problemId}`)
+		);
+	}
+
+	// Check if user has access to this contest
+	const accessCheck = await checkContestAccess(contestId);
+
+	// If contest requires password and user doesn't have access, redirect to access page
+	if (!accessCheck.success && accessCheck.requiresPassword) {
+		redirect(
+			`/contest/${contestId}/access?returnUrl=${encodeURIComponent(
+				`/contest/${contestId}/problem/${problemId}`
+			)}`
 		);
 	}
 
@@ -68,19 +83,12 @@ export default async function ContestProblemPage({
 		);
 	}
 
-	// Prepare contest info for the client component
-	const contestInfo = {
-		id: contest.id,
-		name: contest.name,
-		endTime: contest.endTime,
-	};
-
 	return (
 		<ContestProblemClient
 			problemData={problemData}
 			contestId={contestId}
-			contestInfo={contestInfo}
 			isAuthenticated={session.isAuth}
+			contestEndTime={new Date(contest.endTime)}
 		/>
 	);
 }
